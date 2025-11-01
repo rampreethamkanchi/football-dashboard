@@ -385,6 +385,20 @@
          * Configuration object for the Football Dashboard
          * Modify these settings to customize which teams and leagues you follow
          */
+                /**
+         * Configuration object for the Football Dashboard
+         * Organized by leagues for easy management
+         * 
+         * HOW TO ADD/REMOVE TEAMS:
+         * 1. Find team IDs at: https://dashboard.api-football.com (click 'IDs' -> 'Teams')
+         * 2. Add the team ID to the appropriate league array below
+         * 3. The team will automatically be tracked in all sections
+         * 
+         * HOW TO ADD A NEW LEAGUE:
+         * 1. Create a new array with your league name (e.g., SERIE_A_TEAMS: [team_id1, team_id2])
+         * 2. Add those team IDs to the FAVORITE_TEAMS array at the bottom
+         * 3. Optionally add the league ID to FAVORITE_LEAGUES if you want to filter by league
+         */
         const CONFIG = {
             // Your API-Football API key
             API_KEY: '8b9277137aa319649f204863af812629',
@@ -395,21 +409,102 @@
             // Timezone for displaying match times (Indian Standard Time)
             TIMEZONE: 'Asia/Kolkata',
             
-            // Array of team IDs you want to follow
-            // To find team IDs, visit: https://dashboard.api-football.com
-            FAVORITE_TEAMS: [
+            // ========================================
+            // TEAM IDS ORGANIZED BY LEAGUE
+            // ========================================
+            
+            // Premier League Teams (England) - League ID: 39
+            PREMIER_LEAGUE_TEAMS: [
+                50,  // Manchester City
                 33,  // Manchester United
                 40,  // Liverpool
-                50,  // Manchester City
                 42,  // Arsenal
-                529, // Barcelona
-                541  // Real Madrid
+                49   // Chelsea
             ],
             
-            // Optional: Filter by specific leagues (leave empty array to show all leagues)
-            // Common league IDs: Premier League (39), La Liga (140), Champions League (2)
-            FAVORITE_LEAGUES: []
+            // La Liga Teams (Spain) - League ID: 140
+            LA_LIGA_TEAMS: [
+                541, // Real Madrid
+                529  // Barcelona
+            ],
+            
+            // UEFA Champions League Teams - League ID: 2
+            // (All teams from Premier League + La Liga that you follow)
+            UCL_TEAMS: [
+                50,  // Manchester City
+                33,  // Manchester United
+                40,  // Liverpool
+                42,  // Arsenal
+                49,  // Chelsea
+                541, // Real Madrid
+                529  // Barcelona
+            ],
+            
+            // Saudi Pro League Teams (Saudi Arabia) - League ID: 307
+            SAUDI_LEAGUE_TEAMS: [
+                2939 // Al Nassr (Cristiano Ronaldo's team)
+            ],
+            
+            // Major League Soccer Teams (USA) - League ID: 253
+            MLS_TEAMS: [
+                1604 // Inter Miami CF (Lionel Messi's team)
+            ],
+            
+            // ========================================
+            // COMBINED FAVORITE TEAMS
+            // This combines all the teams from above leagues
+            // ========================================
+            get FAVORITE_TEAMS() {
+                return [
+                    ...this.PREMIER_LEAGUE_TEAMS,
+                    ...this.LA_LIGA_TEAMS,
+                    ...this.SAUDI_LEAGUE_TEAMS,
+                    ...this.MLS_TEAMS
+                    // UCL teams are already included from Premier League and La Liga
+                ];
+            },
+            
+            // ========================================
+            // OPTIONAL: LEAGUE FILTER
+            // Leave empty [] to show all leagues
+            // Add league IDs to filter only specific leagues
+            // ========================================
+            FAVORITE_LEAGUES: [
+                // 39,  // Premier League
+                // 140, // La Liga
+                // 2,   // UEFA Champions League
+                // 307, // Saudi Pro League
+                // 253  // MLS
+            ]
+            // Note: Keeping FAVORITE_LEAGUES empty means you'll see matches 
+            // from ANY league as long as your favorite teams are playing
         };
+
+        // const CONFIG = {
+        //     // Your API-Football API key
+        //     API_KEY: '8b9277137aa319649f204863af812629',
+            
+        //     // Base URL for API requests
+        //     API_BASE_URL: 'https://v3.football.api-sports.io',
+            
+        //     // Timezone for displaying match times (Indian Standard Time)
+        //     TIMEZONE: 'Asia/Kolkata',
+            
+        //     // Array of team IDs you want to follow
+        //     // To find team IDs, visit: https://dashboard.api-football.com
+        //     FAVORITE_TEAMS: [
+        //         33,  // Manchester United
+        //         40,  // Liverpool
+        //         50,  // Manchester City
+        //         42,  // Arsenal
+        //         529, // Barcelona
+        //         541  // Real Madrid
+        //     ],
+            
+        //     // Optional: Filter by specific leagues (leave empty array to show all leagues)
+        //     // Common league IDs: Premier League (39), La Liga (140), Champions League (2)
+        //     FAVORITE_LEAGUES: []
+        // };
 
         /**
          * Makes an API request to API-Football
