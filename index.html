@@ -408,13 +408,7 @@
             
             // Optional: Filter by specific leagues (leave empty array to show all leagues)
             // Common league IDs: Premier League (39), La Liga (140), Champions League (2)
-            FAVORITE_LEAGUES: [],
-            
-            // Number of days to look back for recent results
-            RECENT_DAYS_BACK: 2,
-            
-            // Number of days to look ahead for upcoming fixtures
-            UPCOMING_DAYS_AHEAD: 2
+            FAVORITE_LEAGUES: []
         };
 
         /**
@@ -661,22 +655,18 @@
         }
 
         /**
-         * Fetches and displays recent results
+         * Fetches and displays recent results (only today's finished matches)
+         * Free API plan only allows access to current date range
          */
         async function loadRecentResults() {
             try {
-                const fixtures = [];
-                
-                // Fetch fixtures from the past days
-                for (let i = 0; i < CONFIG.RECENT_DAYS_BACK; i++) {
-                    const date = getDateString(-i);
-                    const data = await apiRequest(`/fixtures?date=${date}&timezone=${CONFIG.TIMEZONE}`);
-                    fixtures.push(...data.response);
-                }
+                // Only fetch today's matches (free plan limitation)
+                const today = getDateString(0);
+                const data = await apiRequest(`/fixtures?date=${today}&timezone=${CONFIG.TIMEZONE}`);
 
                 // Filter for my teams and finished matches
                 const finishedStatuses = ['FT', 'AET', 'PEN'];
-                const myFinishedFixtures = fixtures.filter(fixture => 
+                const myFinishedFixtures = data.response.filter(fixture => 
                     isMyTeam(fixture) && 
                     isMyLeague(fixture) &&
                     finishedStatuses.includes(fixture.fixture.status.short)
@@ -687,7 +677,7 @@
                     new Date(b.fixture.date) - new Date(a.fixture.date)
                 );
 
-                displayFixtures('recent-results', myFinishedFixtures, 'No recent results found');
+                displayFixtures('recent-results', myFinishedFixtures, 'No recent results found for today');
             } catch (error) {
                 displayError('recent-results', 'Failed to load recent results. Please check your API key and try again.');
                 console.error('Error loading recent results:', error);
@@ -695,18 +685,21 @@
         }
 
         /**
-         * Fetches and displays upcoming fixtures
+         * Fetches and displays upcoming fixtures (today and tomorrow only)
+         * Free API plan only allows access to current date range
          */
         async function loadUpcomingFixtures() {
             try {
                 const fixtures = [];
                 
-                // Fetch fixtures for upcoming days
-                for (let i = 0; i <= CONFIG.UPCOMING_DAYS_AHEAD; i++) {
-                    const date = getDateString(i);
-                    const data = await apiRequest(`/fixtures?date=${date}&timezone=${CONFIG.TIMEZONE}`);
-                    fixtures.push(...data.response);
-                }
+                // Fetch today and tomorrow (free plan limitation)
+                const today = getDateString(0);
+                const tomorrow = getDateString(1);
+                
+                const todayData = await apiRequest(`/fixtures?date=${today}&timezone=${CONFIG.TIMEZONE}`);
+                const tomorrowData = await apiRequest(`/fixtures?date=${tomorrow}&timezone=${CONFIG.TIMEZONE}`);
+                
+                fixtures.push(...todayData.response, ...tomorrowData.response);
 
                 // Filter for my teams and scheduled matches
                 const scheduledStatuses = ['TBD', 'NS'];
@@ -721,7 +714,7 @@
                     new Date(a.fixture.date) - new Date(b.fixture.date)
                 );
 
-                displayFixtures('upcoming-fixtures', myScheduledFixtures, 'No upcoming fixtures found');
+                displayFixtures('upcoming-fixtures', myScheduledFixtures, 'No upcoming fixtures found for today and tomorrow');
             } catch (error) {
                 displayError('upcoming-fixtures', 'Failed to load upcoming fixtures. Please check your API key and try again.');
                 console.error('Error loading upcoming fixtures:', error);
